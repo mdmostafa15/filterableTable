@@ -59,14 +59,22 @@
   // responsible for containing data
     class ProductTable extends React.Component{
       render(){
-        // filter logic
+        // props destrucring and assign to local variable
+        const {
+          searVals:{searchVal:filter,isChecked:isStock
+          }
+          ,products
+        }=this.props
+        console.log(products);
+        console.log(filter, isStock);
+        // filter logic and set rows
         const rows=[];
         let checkCategory=null;
-        this.props.products.forEach((product, i) => {
-          if(product.name.indexOf(this.props.filter) === -1) {
+        products.forEach((product, i) => {
+          if(product.name.indexOf(filter) === -1) {
             return;
           }
-          if(this.props.isStock && !product.stocked){
+          if(isStock && !product.stocked){
             return;
           }
           if(product.category!=checkCategory){
@@ -94,24 +102,23 @@
         super(props);
         // binding methods
         this.hendleSearch=this.hendleSearch.bind(this);
-        this.hendleCheckbox=this.hendleCheckbox.bind(this);
       }
       // hending search input with parant hendler
       hendleSearch(e){
+        // type checking and set value
+        const target= e.target;
+        const inpValue= target.type==='checkbox'? target.checked:target.value;
         // passing value and name to neare parant method
-        this.props.forHendleSearch(e.target.value);
-      }
-      // hending checkbox with parant hendler
-      hendleCheckbox(e){
-        this.props.forHendleCheckbox(e.target.checked);
+        this.props.forHendleSearch(target.name, inpValue);
       }
       // rendering element
       render(){
+        const {searchVal:inp, isChecked:check} = this.props.searVals;
         return(
           <form>
-            <input name="searchVal" type="text" style={{"width":"100%"}} value={this.props.inp} placeholder="Search" onChange={this.hendleSearch}/>
+            <input name="searchVal" type="text" style={{"width":"100%"}} value={inp} placeholder="Search" onChange={this.hendleSearch}/>
             <p style={{width:"100%"}}>
-            <input name="isChecked" type="checkbox" checked={this.props.check} onChange={this.hendleCheckbox}/>
+            <input name="isChecked" type="checkbox" checked={check} onChange={this.hendleSearch}/>
             {' '} <small>Show only stocked products!</small></p>
           </form>
         );
@@ -121,31 +128,28 @@
     class FilterTableContainer extends React.Component {
       constructor(props) {
         super(props)
+        // initializing state object
         this.state={
           searchVal:"",
           isChecked:false
         }
-        this.hendleSearchBarInp=this.hendleSearchBarInp.bind(this);
-        this.hendleSearchBarCheck = this.hendleSearchBarCheck.bind(this);
+        //state up; hendler binding
+        this.hendleSearchBar=this.hendleSearchBar.bind(this);
       }
-      hendleSearchBarInp(passedVal){
+      hendleSearchBar(passedName, passedVal){
         this.setState({
-          searchVal:passedVal
+          [passedName]:passedVal
         });
       }
-      hendleSearchBarCheck(arg){
-        this.setState({
-          isChecked: arg
-        });
-      }
+
       render(){
         return(
           <React.Fragment>
             <h3 style={{color:"green"}}>Filterable Products Table</h3>
 
-            <SearchBar forHendleCheckbox={this.hendleSearchBarCheck} forHendleSearch={this.hendleSearchBarInp} inp={this.state.searchVal} check={this.state.isChecked}/>
+            <SearchBar forHendleSearch={this.hendleSearchBar} searVals={this.state} />
 
-            <ProductTable filter={this.state.searchVal} isStock={this.state.isChecked} products={this.props.products} />
+            <ProductTable searVals={this.state} products={this.props.products} />
           </React.Fragment>
         );
       }
